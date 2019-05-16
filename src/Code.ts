@@ -1,4 +1,5 @@
 import { InputSheet, ListSheet } from './Item';
+import { Firestore } from './Firestore';
 
 var ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -47,6 +48,9 @@ function setDataRegistration() {
 }
 
 function updateFirestore() {
-  var listSheet = new ListSheet('Item', ss, 2, 3, 'C', 5);
-  listSheet.getAllDataConvertFirestore();
+  let listSheet = new ListSheet('Item', ss, 2, 3, 'C', 5);
+  let data = listSheet.getAllDataConvertFirestore();
+
+  let firestore = new Firestore('DEV');
+  firestore.updateFirestore('ItemCollection/ItemDocument', data);
 }
