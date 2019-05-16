@@ -1,4 +1,4 @@
-import { Register } from './Item';
+import { InputSheet, ListSheet } from './Item';
 
 var ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -12,10 +12,10 @@ function onOpen() {
   var menu = ui.createMenu(menuName);
   var subMenu1 = ui.createMenu(subMenuName + '1');
   subMenu1.addItem(item1, 'setDataRegistration');
-  subMenu1.addItem(item2, 'setDataRegistration');
+  subMenu1.addItem(item2, 'updateFirestore');
   var subMenu2 = ui.createMenu(subMenuName + '2');
   subMenu2.addItem(item1, 'setDataRegistration');
-  subMenu2.addItem(item2, 'setDataRegistration');
+  subMenu2.addItem(item2, 'updateFirestore');
   menu.addSubMenu(subMenu1);
   menu.addSubMenu(subMenu2);
 
@@ -23,21 +23,30 @@ function onOpen() {
 }
 
 function setDataRegistration() {
-  var register = new Register('Book',2,3,'C',ss,'C4');  
-  var lastRow = register.getLastRow();
-  Logger.log(lastRow);
+  var inputSheet = new InputSheet('Item', ss, 6, 3, 'C4', 4);
+  var id = inputSheet.getId();
+  var data = inputSheet.getInputData();
+
+  if (data.length === 0) {
+    Browser.msgBox('未入力の項目があります。');
+    return;
+  }
+
+  var listSheet = new ListSheet('Item', ss, 2, 3, 'C', 5);
+
+  if (id !== '' && listSheet.isDuplicateId(id)) {
+    let confirm = Browser.msgBox('重複しているデータがあります。上書きしますか？', Browser.Buttons.OK_CANCEL);
+    if(confirm === 'ok') {
+      listSheet.updateData(id, data);
+    } else {
+      Browser.msgBox('登録をキャンセルしました。');
+    }
+  } else {
+    listSheet.addData(data);
+  }
 }
 
-function idConfirmation(id: string, lastRow: number): boolean {
-  var sheet = ss.getSheetByName('BookList');
-
-  if (lastRow <= 1)
-    return false;
-  
-  // 開始セル C2 => (2, 3)
-  // 個数 (最終行-header行 個, header列-(空欄列+No列) 個)
-  var list = sheet.getRange(2, 3, lastRow - 1, sheet.getLastColumn() - 2).getValues();
-
-  Logger.log(list);
-  return true;
+function updateFirestore() {
+  var listSheet = new ListSheet('Item', ss, 2, 3, 'C', 5);
+  listSheet.getAllDataConvertFirestore();
 }
