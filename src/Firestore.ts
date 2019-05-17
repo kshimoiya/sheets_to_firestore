@@ -12,12 +12,8 @@ export class Firestore {
   // DEV or PROD
   constructor(buildConfig: string) {
     let email: string = properties.getProperty(`${buildConfig}_EMAIL`);
-    let key: string = properties.getProperty(`${buildConfig}_KEY`);
+    let key: string = properties.getProperty(`${buildConfig}_KEY`).replace(/\\n/g, '\n');
     let id: string = properties.getProperty(`${buildConfig}_PROJECTID`);
-    Logger.log(email);
-    // TODO: 改行コードのパース
-    Logger.log(key.replace('\n', ''));
-    Logger.log(id);
     this.firestore = FirestoreApp.getFirestore(email, key, id);
   }
 
